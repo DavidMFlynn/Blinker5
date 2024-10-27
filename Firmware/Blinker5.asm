@@ -16,9 +16,13 @@
 ;    Features: 	TTL Packet Serial
 ;	Up to 6 outputs at a maximum of 2 amps total.
 ;
+	constant	FinSeq=0
+	constant	NC_Blinker=1
 ;Mode 0: Run the sequence at power up.
 ;
 ;    History:
+; 1.1b1   10/27/2024	Added Nosecone flash sequence.
+; 1.0b1   10/26/2024	First working version.
 ; 1.0d1   12/23/2023	First code. Copied from SerialServo 1.1b5
 ;
 ;====================================================================================================
@@ -499,7 +503,7 @@ ModeReturn:
 ;=========================================================================================
 ;Run an ouput sequence
 ;
-OutMask	EQU	b'1001000'
+OutMask	EQU	b'10100000'
 OutJ2	EQU	0x02
 OutJ3	EQU	0x01
 OutJ4	EQU	0x40
@@ -509,9 +513,9 @@ OutJ7	EQU	0x10
 ;
 DoModeZero:
 	movlb	0x00	;bank 0
-	movf	Timer1Lo,F
+	movf	Timer2Lo,F
 	SKPZ		;Timer1Lo=0?
-	return		; no
+	goto	ModeReturn	; no
 	call	GetSeqData
 	movf	Param78,W
 	movwf	Timer2Lo
@@ -527,26 +531,197 @@ DoModeZero:
 ;
 ; Data
 ;
-FinTime	EQU	.50	;1/2 second
 ;
 ;==================================
 ; Exit: Param78 = time, Param79 = output data bits
 ; 
 GetSeqData	movf	SequenceIndex,W
-	call	SequenceData
-	movwf	Param78
-	incf	SequenceData,F
+	call	SequenceData	;Get Time 1..255 1/100ths seconds
+	movwf	Param78	; Save in Param78
+	incf	SequenceIndex,F	;advance pointer
 	movf	SequenceIndex,W
-	call	SequenceData
-	movwf	Param79
-	incf	SequenceData,F
-	iorwf	Param78,W
+	call	SequenceData	;Get output bits 1=ON
+	movwf	Param79	; Save in Param79
+	incf	SequenceIndex,F	;advance pointer
+	iorwf	Param78,W	;Both time and bits are 0x00?
 	SKPZ
-	return
-	clrf	SequenceIndex
+	return		; No
+	clrf	SequenceIndex	; Yes, restart at beginning
 	bra	GetSeqData
 ;
-;	if oldCode
+	if NC_Blinker
+;====================================
+; Sequence white/yellow Nosecone blinker
+;	
+SequenceData	brw		;(PC)+(W) -> (PC)
+	RETLW	.200	;2 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;1/2 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.150	;1.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.100	;1.0 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.100	;1.0 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.150	;1.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.200	;2.0 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.150	;1.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.100	;1.0 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.100	;1.0 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.150	;1.5 seconds white
+	RETLW	OutJ2
+;
+	RETLW	.10	;dark for 0.1 seconds
+	RETLW	.00
+;
+	RETLW	.50	;0.5 second yellow
+	RETLW	OutJ3
+;
+;end of sequence
+	RETLW	0x00
+	RETLW	0X00
+	endif
+;
+	if FinSeq
+;====================================
+; Sequence two fins ON at a time, 5 fins
+FinTime	EQU	.10	;1/10 second
+;	
+SequenceData	brw		;(PC)+(W) -> (PC)
+	RETLW	FinTime
+	RETLW	OutJ2+OutJ3
+	RETLW	FinTime
+	RETLW	OutJ3+OutJ4
+	RETLW	FinTime
+	RETLW	OutJ4+OutJ5
+	RETLW	FinTime
+	RETLW	OutJ5+OutJ6
+	RETLW	FinTime
+	RETLW	OutJ2+OutJ6
+;end of sequence
+	RETLW	0x00
+	RETLW	0X00
+	endif	
+;
+	if oldCode
 ;====================================
 ; Sequence one fin ON at a time, 5 fins
 ;	
@@ -564,7 +739,7 @@ SequenceData	brw		;(PC)+(W) -> (PC)
 ;end of sequence
 	RETLW	0x00
 	RETLW	0X00
-;	endif
+	endif
 ;
 	if oldCode
 ;====================================

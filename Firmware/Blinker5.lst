@@ -19,46 +19,50 @@ Blinker5.asm                                                          Page: 1
 00016 0000 	;    Features: 	TTL Packet Serial
 00017 0000 	;	Up to 6 outputs at a maximum of 2 amps total.
 00018 0000 	;
-00019 0000 	;Mode 0: Run the sequence at power up.
-00020 0000 	;
-00021 0000 	;    History:
-00022 0000 	; 1.0d1   12/23/2023	First code. Copied from SerialServo 1.1b5
-00023 0000 	;
-00024 0000 	;====================================================================================================
-00025 0000 	; ToDo:
-00026 0000 	;    Serial commands for config and setup.
+00019 0000 		constant	FinSeq=0
+00020 0000 		constant	NC_Blinker=1
+00021 0000 	;Mode 0: Run the sequence at power up.
+00022 0000 	;
+00023 0000 	;    History:
+00024 0000 	; 1.1b1   10/27/2024	Added Nosecone flash sequence.
+00025 0000 	; 1.0b1   10/26/2024	First working version.
+00026 0000 	; 1.0d1   12/23/2023	First code. Copied from SerialServo 1.1b5
 00027 0000 	;
 00028 0000 	;====================================================================================================
-00029 0000 	;====================================================================================================
-00030 0000 	; What happens next:
-00031 0000 	;   At power up the system LED will blink.
-00032 0000 	;   Mode 0: Run the sequence at power up.
+00029 0000 	; ToDo:
+00030 0000 	;    Serial commands for config and setup.
+00031 0000 	;
+00032 0000 	;====================================================================================================
 00033 0000 	;====================================================================================================
-00034 0000 	;
-00035 0000 	;   Pin 1 (RA2/AN2) Driver4 (Active High Output) J5
-00036 0000 	;   Pin 2 (RA3/AN3) Driver5 (Active High Output) J6
-00037 0000 	;   Pin 3 (RA4/AN4) Driver6 (Active High Output) J7
-00038 0000 	;   Pin 4 (RA5/MCLR*) VPP/MCLR*
-00039 0000 	;   Pin 5 (GND) Ground
-00040 0000 	;   Pin 6 (RB0) nc
-00041 0000 	;   Pin 7 (RB1/AN11/SDA1) TTL Serial RX
-00042 0000 	;   Pin 8 (RB2/AN10/TX) TTL Serial TX
-00043 0000 	;   Pin 9 (RB3/CCP1) nc
-00044 0000 	;
-00045 0000 	;   Pin 10 (RB4/AN8/SLC1) nc
-00046 0000 	;   Pin 11 (RB5/AN7) nc
-00047 0000 	;   Pin 12 (RB6/AN5/CCP2) ICSPCLK
-00048 0000 	;   Pin 13 (RB7/AN6) ICSPDAT
-00049 0000 	;   Pin 14 (Vcc) +5 volts
-00050 0000 	;   Pin 15 (RA6) Driver3 (Active High Output) J4
-00051 0000 	;   Pin 16 (RA7/CCP2) LED3 (Active Low Output)(System LED)
-00052 0000 	;   Pin 17 (RA0/AN0) Driver2 (Active High Output) J3
-00053 0000 	;   Pin 18 (RA1/AN1) Driver1 (Active High Output) J2
-00054 0000 	;
-00055 0000 	;====================================================================================================
-00056 0000 	;
-00057 0000 	;
-00058 0000 		list	p=16f1847,r=hex,W=1	; list directive to define processor
+00034 0000 	; What happens next:
+00035 0000 	;   At power up the system LED will blink.
+00036 0000 	;   Mode 0: Run the sequence at power up.
+00037 0000 	;====================================================================================================
+00038 0000 	;
+00039 0000 	;   Pin 1 (RA2/AN2) Driver4 (Active High Output) J5
+00040 0000 	;   Pin 2 (RA3/AN3) Driver5 (Active High Output) J6
+00041 0000 	;   Pin 3 (RA4/AN4) Driver6 (Active High Output) J7
+00042 0000 	;   Pin 4 (RA5/MCLR*) VPP/MCLR*
+00043 0000 	;   Pin 5 (GND) Ground
+00044 0000 	;   Pin 6 (RB0) nc
+00045 0000 	;   Pin 7 (RB1/AN11/SDA1) TTL Serial RX
+00046 0000 	;   Pin 8 (RB2/AN10/TX) TTL Serial TX
+00047 0000 	;   Pin 9 (RB3/CCP1) nc
+00048 0000 	;
+00049 0000 	;   Pin 10 (RB4/AN8/SLC1) nc
+00050 0000 	;   Pin 11 (RB5/AN7) nc
+00051 0000 	;   Pin 12 (RB6/AN5/CCP2) ICSPCLK
+00052 0000 	;   Pin 13 (RB7/AN6) ICSPDAT
+00053 0000 	;   Pin 14 (Vcc) +5 volts
+00054 0000 	;   Pin 15 (RA6) Driver3 (Active High Output) J4
+00055 0000 	;   Pin 16 (RA7/CCP2) LED3 (Active Low Output)(System LED)
+00056 0000 	;   Pin 17 (RA0/AN0) Driver2 (Active High Output) J3
+00057 0000 	;   Pin 18 (RA1/AN1) Driver1 (Active High Output) J2
+00058 0000 	;
+00059 0000 	;====================================================================================================
+00060 0000 	;
+00061 0000 	;
+00062 0000 		list	p=16f1847,r=hex,W=1	; list directive to define processor
 00001 0000 		nolist
 00002 0000 	;
 00003 0000 	;==========================================================================
@@ -70,391 +74,391 @@ Blinker5.asm                                                          Page: 1
 00009 0000 	;
 01163 0000 		NOLIST
 01164 0000 	;
-00061 0000 		list
-00062 0000 	;
-00063 8007 EFA4 		__CONFIG _CONFIG1,_FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF & _IESO_OFF
-00064 0000 	;
-00065 0000 	;
-00066 0000 	; INTOSC oscillator: I/O function on CLKIN pin
-00067 0000 	; WDT disabled
-00068 0000 	; PWRT disabled
-00069 0000 	; MCLR/VPP pin function is digital input
-00070 0000 	; Program memory code protection is disabled
-00071 0000 	; Data memory code protection is disabled
-00072 0000 	; Brown-out Reset enabled
-00073 0000 	; CLKOUT function is disabled. I/O or oscillator function on the CLKOUT pin
-00074 0000 	; Internal/External Switchover mode is disabled
-00075 0000 	; Fail-Safe Clock Monitor is enabled
-00076 0000 	;
-00077 8008 DFFF 		__CONFIG _CONFIG2,_WRT_OFF & _PLLEN_ON & _LVP_OFF
-00078 0000 	;
-00079 0000 	; Write protection off
-00080 0000 	; 4x PLL Enabled
-00081 0000 	; Stack Overflow or Underflow will cause a Reset
-00082 0000 	; Brown-out Reset Voltage (Vbor), low trip point selected.
-00083 0000 	; Low-voltage programming enabled
-00084 0000 	;
-00085 0000 	; '__CONFIG' directive is used to embed configuration data within .asm file.
-00086 0000 	; The lables following the directive are located in the respective .inc file.
-00087 0000 	; See respective data sheet for additional information on configuration word.
+00065 0000 		list
+00066 0000 	;
+00067 8007 EFA4 		__CONFIG _CONFIG1,_FOSC_INTOSC & _WDTE_OFF & _MCLRE_OFF & _IESO_OFF
+00068 0000 	;
+00069 0000 	;
+00070 0000 	; INTOSC oscillator: I/O function on CLKIN pin
+00071 0000 	; WDT disabled
+00072 0000 	; PWRT disabled
+00073 0000 	; MCLR/VPP pin function is digital input
+00074 0000 	; Program memory code protection is disabled
+00075 0000 	; Data memory code protection is disabled
+00076 0000 	; Brown-out Reset enabled
+00077 0000 	; CLKOUT function is disabled. I/O or oscillator function on the CLKOUT pin
+00078 0000 	; Internal/External Switchover mode is disabled
+00079 0000 	; Fail-Safe Clock Monitor is enabled
+00080 0000 	;
+00081 8008 DFFF 		__CONFIG _CONFIG2,_WRT_OFF & _PLLEN_ON & _LVP_OFF
+00082 0000 	;
+00083 0000 	; Write protection off
+00084 0000 	; 4x PLL Enabled
+00085 0000 	; Stack Overflow or Underflow will cause a Reset
+00086 0000 	; Brown-out Reset Voltage (Vbor), low trip point selected.
+00087 0000 	; Low-voltage programming enabled
 00088 0000 	;
-00089 0000 		constant	oldCode=0
-00090 0000 		constant	useRS232=0
+00089 0000 	; '__CONFIG' directive is used to embed configuration data within .asm file.
+00090 0000 	; The lables following the directive are located in the respective .inc file.
 Blinker5.asm                                                          Page: 2
 /Users/davidflynn/Projects/Blinker5/Firmware/
 
-00091 0000 		constant	UseEEParams=1
-00092 0000 		constant	UseAuxLEDBlinking=0
-00093 0000 	;
-00094 0000 		constant	UseAltSerialPort=0
-00095 0000 		constant	RP_LongAddr=0
-00096 0000 		constant	RP_AddressBytes=1
-00097 0000 		constant	RP_DataBytes=4
-00098 0000 		constant	UseRS232SyncBytes=1
-00099 0000 00DD 	kRS232SyncByteValue	EQU	0xDD
-00100 0000 		constant	UseRS232Chksum=1
-00101 0000 		constant               UsePID=0
-00102 0000 	;
-00103 0000 0001 	kRS232_MasterAddr	EQU	0x01	;Master's Address
-00104 0000 0002 	kRS232_SlaveAddr	EQU	0x02	;This Slave's Address
-00105 0000 0000 	kSysMode	EQU	.0	;Default Mode
+00091 0000 	; See respective data sheet for additional information on configuration word.
+00092 0000 	;
+00093 0000 		constant	oldCode=0
+00094 0000 		constant	useRS232=0
+00095 0000 		constant	UseEEParams=1
+00096 0000 		constant	UseAuxLEDBlinking=0
+00097 0000 	;
+00098 0000 		constant	UseAltSerialPort=0
+00099 0000 		constant	RP_LongAddr=0
+00100 0000 		constant	RP_AddressBytes=1
+00101 0000 		constant	RP_DataBytes=4
+00102 0000 		constant	UseRS232SyncBytes=1
+00103 0000 00DD 	kRS232SyncByteValue	EQU	0xDD
+00104 0000 		constant	UseRS232Chksum=1
+00105 0000 		constant               UsePID=0
 00106 0000 	;
-00107 0000 0003 	#Define	_C	STATUS,C
-00108 0000 0003 	#Define	_Z	STATUS,Z
-00109 0000 	;
-00110 0000 	;====================================================================================================
-00113 0000 		nolist
-00114 0000 	;
-00115 0000 	;    Port A bits
-00116 0000 00A0 	PortADDRBits	EQU	b'10100000'
-00117 0000 0000 	PortAValue	EQU	b'00000000'
-00118 0000 0000 	ANSELA_Val	EQU	b'00000000'	;All Digital
-00119 0000 	;
-00120 0000 000C 	#Define	Driver2	PORTA,0	;Driver2 J3 (Active High Output)
-00121 0000 000C 	#Define	Driver1	PORTA,1	;Driver1 J2 (Active High Output)
-00122 0000 000C 	#Define	Driver4	PORTA,2	;Driver4 J5 (Active High Output)
-00123 0000 000C 	#Define	Driver5	PORTA,3	;Driver5 J6 (Active High Output)
-00124 0000 000C 	#Define	Driver6	PORTA,4	;Driver6 J7 (Active High Output)
-00125 0000 000C 	#Define	RA5_In	PORTA,5	;VPP/MCLR*
-00126 0000 000C 	#Define	Driver3	PORTA,6	;Driver3 J4 (Active High Output)
-00127 0000 000C 	#Define	RA7_In	PORTA,7	;LED1 (Active Low Output)(System LED)
-00128 0000 0007 	SysLED_Bit	EQU	7	;Sys_LED (Active Low Output)
-00129 0000 008C 	#Define	SysLED_Tris	TRISA,SysLED_Bit	;Sys_LED (Active Low Output)
-00130 0000 	;
-00131 0000 	;
-00132 0000 00F8 	Servo_AddrDataMask	EQU	0xF8
-00133 0000 	;
+00107 0000 0001 	kRS232_MasterAddr	EQU	0x01	;Master's Address
+00108 0000 0002 	kRS232_SlaveAddr	EQU	0x02	;This Slave's Address
+00109 0000 0000 	kSysMode	EQU	.0	;Default Mode
+00110 0000 	;
+00111 0000 0003 	#Define	_C	STATUS,C
+00112 0000 0003 	#Define	_Z	STATUS,Z
+00113 0000 	;
+00114 0000 	;====================================================================================================
+00117 0000 		nolist
+00118 0000 	;
+00119 0000 	;    Port A bits
+00120 0000 00A0 	PortADDRBits	EQU	b'10100000'
+00121 0000 0000 	PortAValue	EQU	b'00000000'
+00122 0000 0000 	ANSELA_Val	EQU	b'00000000'	;All Digital
+00123 0000 	;
+00124 0000 000C 	#Define	Driver2	PORTA,0	;Driver2 J3 (Active High Output)
+00125 0000 000C 	#Define	Driver1	PORTA,1	;Driver1 J2 (Active High Output)
+00126 0000 000C 	#Define	Driver4	PORTA,2	;Driver4 J5 (Active High Output)
+00127 0000 000C 	#Define	Driver5	PORTA,3	;Driver5 J6 (Active High Output)
+00128 0000 000C 	#Define	Driver6	PORTA,4	;Driver6 J7 (Active High Output)
+00129 0000 000C 	#Define	RA5_In	PORTA,5	;VPP/MCLR*
+00130 0000 000C 	#Define	Driver3	PORTA,6	;Driver3 J4 (Active High Output)
+00131 0000 000C 	#Define	RA7_In	PORTA,7	;LED1 (Active Low Output)(System LED)
+00132 0000 0007 	SysLED_Bit	EQU	7	;Sys_LED (Active Low Output)
+00133 0000 008C 	#Define	SysLED_Tris	TRISA,SysLED_Bit	;Sys_LED (Active Low Output)
 00134 0000 	;
-00135 0000 	;    Port B bits
-00136 0000 00FF 	PortBDDRBits	EQU	b'11111111'	;All digital inputs
-00137 0000 0000 	PortBValue	EQU	b'00000000'
-00138 0000 0000 	ANSELB_Val	EQU	b'00000000'	;RB5/AN7
-00139 0000 	;
-00140 0000 000D 	#Define	RB0_In	PORTB,0	;nc
-00141 0000 000D 	#Define	RB1_In	PORTB,1	;RX Serial Data
-00142 0000 000D 	#Define	RB2_In	PORTB,2	;TX Serial Data
-00143 0000 000D 	#Define	RB3_In	PORTB,3	;nc
-00144 0000 000D 	#Define	RB4_In	PORTB,4	;nc
-00145 0000 000D 	#Define	RB5_In	PORTB,5	;nc
-00146 0000 000D 	#Define	RB6_In	PORTB,6	;ICSPCLK
-00147 0000 000D 	#Define	RB7_In	PORTB,7	;ICSPDAT
-00148 0000 	;
-00149 0000 	;
-00150 0000 	;========================================================================================
-00151 0000 	;========================================================================================
+00135 0000 	;
+00136 0000 00F8 	Servo_AddrDataMask	EQU	0xF8
+00137 0000 	;
+00138 0000 	;
+00139 0000 	;    Port B bits
+00140 0000 00FF 	PortBDDRBits	EQU	b'11111111'	;All digital inputs
+00141 0000 0000 	PortBValue	EQU	b'00000000'
+00142 0000 0000 	ANSELB_Val	EQU	b'00000000'	;RB5/AN7
+00143 0000 	;
+00144 0000 000D 	#Define	RB0_In	PORTB,0	;nc
+00145 0000 000D 	#Define	RB1_In	PORTB,1	;RX Serial Data
+00146 0000 000D 	#Define	RB2_In	PORTB,2	;TX Serial Data
+00147 0000 000D 	#Define	RB3_In	PORTB,3	;nc
+00148 0000 000D 	#Define	RB4_In	PORTB,4	;nc
+00149 0000 000D 	#Define	RB5_In	PORTB,5	;nc
+00150 0000 000D 	#Define	RB6_In	PORTB,6	;ICSPCLK
+00151 0000 000D 	#Define	RB7_In	PORTB,7	;ICSPDAT
 00152 0000 	;
-00153 0000 	;Constants
-00154 0000 00FF 	All_In	EQU	0xFF
-00155 0000 0000 	All_Out	EQU	0x00
+00153 0000 	;
+00154 0000 	;========================================================================================
+00155 0000 	;========================================================================================
 00156 0000 	;
-00157 0000 	;OSCCON_Value	EQU	b'01110010'	; 8 MHz
-00158 0000 00F0 	OSCCON_Value	EQU	b'11110000'	;32MHz
-00159 0000 	;
-00160 0000 	;T2CON_Value	EQU	b'01001110'	;T2 On, /16 pre, /10 post
-00161 0000 004F 	T2CON_Value	EQU	b'01001111'	;T2 On, /64 pre, /10 post
-00162 0000 007D 	PR2_Value	EQU	.125
+00157 0000 	;Constants
+00158 0000 00FF 	All_In	EQU	0xFF
+00159 0000 0000 	All_Out	EQU	0x00
+00160 0000 	;
+00161 0000 	;OSCCON_Value	EQU	b'01110010'	; 8 MHz
+00162 0000 00F0 	OSCCON_Value	EQU	b'11110000'	;32MHz
 00163 0000 	;
-00164 0000 0064 	LEDTIME	EQU	d'100'	;1.00 seconds
-00165 0000 000A 	LEDErrorTime	EQU	d'10'
-00166 0000 0014 	LEDFastTime	EQU	d'20'
+00164 0000 	;T2CON_Value	EQU	b'01001110'	;T2 On, /16 pre, /10 post
+00165 0000 004F 	T2CON_Value	EQU	b'01001111'	;T2 On, /64 pre, /10 post
+00166 0000 007D 	PR2_Value	EQU	.125
 00167 0000 	;
-00168 0000 	;T1CON_Val	EQU	b'00000001'	;Fosc=8MHz, PreScale=1,Fosc/4,Timer ON
-00169 0000 0021 	T1CON_Val	EQU	b'00100001'	;Fosc=32MHz, PreScale=4,Fosc/4,Timer ON
-00170 0000 	;
-00171 0000 	;TXSTA_Value	EQU	b'00100000'	;8 bit, TX enabled, Async, low speed
-00172 0000 0024 	TXSTA_Value	EQU	b'00100100'	;8 bit, TX enabled, Async, high speed
-00173 0000 0090 	RCSTA_Value	EQU	b'10010000'	;RX enabled, 8 bit, Continious receive
-00174 0000 0008 	BAUDCON_Value	EQU	b'00001000'	;BRG16=1
-00175 0000 	; 8MHz clock low speed (BRGH=0,BRG16=1)
-00176 0000 	;Baud_300	EQU	d'1666'	;0.299, -0.02%
-00177 0000 	;Baud_1200	EQU	d'416'	;1.199, -0.08%
-00178 0000 	;Baud_2400	EQU	d'207'	;2.404, +0.16%
-00179 0000 	;Baud_9600	EQU	d'51'	;9.615, +0.16%
-00180 0000 	; 32MHz clock low speed (BRGH=1,BRG16=1)
-00181 0000 682A 	Baud_300	EQU	.26666	;300, 0.00%
-00182 0000 1A0A 	Baud_1200	EQU	.6666	;1200, 0.00%
-00183 0000 0D04 	Baud_2400	EQU	.3332	;2400, +0.01%
-00184 0000 0340 	Baud_9600	EQU	.832	;9604, +0.04%
-00185 0000 01A0 	Baud_19200	EQU	.416	;19.18k, -0.08%
-00186 0000 00CF 	Baud_38400	EQU	.207	;38.46k, +0.16%
-00187 0000 008A 	Baud_57600	EQU	.138	;57.55k, -0.08%
-00188 0000 00CF 	BaudRate	EQU	Baud_38400
-00189 0000 	;
-00190 0000 	;
-00191 0000 000A 	DebounceTime	EQU	.10
+00168 0000 0064 	LEDTIME	EQU	d'100'	;1.00 seconds
+00169 0000 000A 	LEDErrorTime	EQU	d'10'
+00170 0000 0014 	LEDFastTime	EQU	d'20'
+00171 0000 	;
+00172 0000 	;T1CON_Val	EQU	b'00000001'	;Fosc=8MHz, PreScale=1,Fosc/4,Timer ON
+00173 0000 0021 	T1CON_Val	EQU	b'00100001'	;Fosc=32MHz, PreScale=4,Fosc/4,Timer ON
+00174 0000 	;
+00175 0000 	;TXSTA_Value	EQU	b'00100000'	;8 bit, TX enabled, Async, low speed
+00176 0000 0024 	TXSTA_Value	EQU	b'00100100'	;8 bit, TX enabled, Async, high speed
+00177 0000 0090 	RCSTA_Value	EQU	b'10010000'	;RX enabled, 8 bit, Continious receive
+00178 0000 0008 	BAUDCON_Value	EQU	b'00001000'	;BRG16=1
+00179 0000 	; 8MHz clock low speed (BRGH=0,BRG16=1)
+00180 0000 	;Baud_300	EQU	d'1666'	;0.299, -0.02%
+00181 0000 	;Baud_1200	EQU	d'416'	;1.199, -0.08%
+00182 0000 	;Baud_2400	EQU	d'207'	;2.404, +0.16%
+00183 0000 	;Baud_9600	EQU	d'51'	;9.615, +0.16%
+00184 0000 	; 32MHz clock low speed (BRGH=1,BRG16=1)
+00185 0000 682A 	Baud_300	EQU	.26666	;300, 0.00%
+00186 0000 1A0A 	Baud_1200	EQU	.6666	;1200, 0.00%
+00187 0000 0D04 	Baud_2400	EQU	.3332	;2400, +0.01%
+00188 0000 0340 	Baud_9600	EQU	.832	;9604, +0.04%
+00189 0000 01A0 	Baud_19200	EQU	.416	;19.18k, -0.08%
+00190 0000 00CF 	Baud_38400	EQU	.207	;38.46k, +0.16%
+00191 0000 008A 	Baud_57600	EQU	.138	;57.55k, -0.08%
 Blinker5.asm                                                          Page: 3
 /Users/davidflynn/Projects/Blinker5/Firmware/
 
-00192 0000 0000 	kMaxMode	EQU	.0
+00192 0000 00CF 	BaudRate	EQU	Baud_38400
 00193 0000 	;
 00194 0000 	;
-00195 0000 	;================================================================================================
-00196 0000 	;***** VARIABLE DEFINITIONS
-00197 0000 	; there are 256 bytes of ram, Bank0 0x20..0x7F, Bank1 0xA0..0xEF, Bank2 0x120..0x16F
-00198 0000 	; there are 256 bytes of EEPROM starting at 0x00 the EEPROM is not mapped into memory but
-00199 0000 	;  accessed through the EEADR and EEDATA registers
-00200 0000 	;================================================================================================
-00201 0000 	;  Bank0 Ram 020h-06Fh 80 Bytes
-00202 0000 	;
-00203 0000 		cblock	0x20
-00204 0000 	;
-00205 0000 0020 		SysLED_Time		;sys LED time
-00206 0000 0021 		SysLED_Blinks		;0=1 flash,1,2,3
-00207 0000 0022 		SysLED_BlinkCount
-00208 0000 0023 		SysLEDCount		;sys LED Timer tick count
-00209 0000 	;
-00210 0000 0024 		SequenceIndex
-00211 0000 	;
-00212 0000 0025 		EEAddrTemp		;EEProm address to read or write
-00213 0000 0026 		EEDataTemp		;Data to be writen to EEProm
-00214 0000 	;
-00215 0000 0027 		Timer1Lo		;1st 16 bit timer
-00216 0000 0028 		Timer1Hi		; 50 mS RX timeiout
-00217 0000 0029 		Timer2Lo		;2nd 16 bit timer
-00218 0000 002A 		Timer2Hi		;
-00219 0000 002B 		Timer3Lo		;3rd 16 bit timer
-00220 0000 002C 		Timer3Hi		;GP wait timer
-00221 0000 002D 		Timer4Lo		;4th 16 bit timer
-00222 0000 002E 		Timer4Hi		; debounce timer
-00223 0000 	;
-00224 0000 002F 		TXByte		;Next byte to send
-00225 0000 0030 		RXByte		;Last byte received
-00226 0000 0031 		SerFlags
+00195 0000 000A 	DebounceTime	EQU	.10
+00196 0000 0000 	kMaxMode	EQU	.0
+00197 0000 	;
+00198 0000 	;
+00199 0000 	;================================================================================================
+00200 0000 	;***** VARIABLE DEFINITIONS
+00201 0000 	; there are 256 bytes of ram, Bank0 0x20..0x7F, Bank1 0xA0..0xEF, Bank2 0x120..0x16F
+00202 0000 	; there are 256 bytes of EEPROM starting at 0x00 the EEPROM is not mapped into memory but
+00203 0000 	;  accessed through the EEADR and EEDATA registers
+00204 0000 	;================================================================================================
+00205 0000 	;  Bank0 Ram 020h-06Fh 80 Bytes
+00206 0000 	;
+00207 0000 		cblock	0x20
+00208 0000 	;
+00209 0000 0020 		SysLED_Time		;sys LED time
+00210 0000 0021 		SysLED_Blinks		;0=1 flash,1,2,3
+00211 0000 0022 		SysLED_BlinkCount
+00212 0000 0023 		SysLEDCount		;sys LED Timer tick count
+00213 0000 	;
+00214 0000 0024 		SequenceIndex
+00215 0000 	;
+00216 0000 0025 		EEAddrTemp		;EEProm address to read or write
+00217 0000 0026 		EEDataTemp		;Data to be writen to EEProm
+00218 0000 	;
+00219 0000 0027 		Timer1Lo		;1st 16 bit timer
+00220 0000 0028 		Timer1Hi		; 50 mS RX timeiout
+00221 0000 0029 		Timer2Lo		;2nd 16 bit timer
+00222 0000 002A 		Timer2Hi		;
+00223 0000 002B 		Timer3Lo		;3rd 16 bit timer
+00224 0000 002C 		Timer3Hi		;GP wait timer
+00225 0000 002D 		Timer4Lo		;4th 16 bit timer
+00226 0000 002E 		Timer4Hi		; debounce timer
 00227 0000 	;
-00228 0000 	;-----------------------
-00229 0000 	;Below here are saved in eprom
-00230 0000 	;
-00231 0000 0032 		SysMode
-00232 0000 0033 		RS232_MasterAddr
-00233 0000 0034 		RS232_SlaveAddr
-00234 0000 0035 		SysFlags		;saved in eprom 0x64 must
-00235 0000 				; move something to another
-00236 0000 				; bank before adding anything new
-00237 0000 	;
-00238 0000 		endc
-00239 0000 	;--------------------------------------------------------------
-00240 0000 	;
-00241 0000 	;---SerFlags bits---
-00242 0000 0031 	#Define	DataReceivedFlag	SerFlags,1
-00243 0000 0031 	#Define	DataSentFlag	SerFlags,2
+00228 0000 002F 		TXByte		;Next byte to send
+00229 0000 0030 		RXByte		;Last byte received
+00230 0000 0031 		SerFlags
+00231 0000 	;
+00232 0000 	;-----------------------
+00233 0000 	;Below here are saved in eprom
+00234 0000 	;
+00235 0000 0032 		SysMode
+00236 0000 0033 		RS232_MasterAddr
+00237 0000 0034 		RS232_SlaveAddr
+00238 0000 0035 		SysFlags		;saved in eprom 0x64 must
+00239 0000 				; move something to another
+00240 0000 				; bank before adding anything new
+00241 0000 	;
+00242 0000 		endc
+00243 0000 	;--------------------------------------------------------------
 00244 0000 	;
-00245 0000 	;
-00246 0000 	;---------------
-00247 0000 0032 	#Define	FirstRAMParam	SysMode
-00248 0000 0035 	#Define	LastRAMParam	SysFlags
+00245 0000 	;---SerFlags bits---
+00246 0000 0031 	#Define	DataReceivedFlag	SerFlags,1
+00247 0000 0031 	#Define	DataSentFlag	SerFlags,2
+00248 0000 	;
 00249 0000 	;
-00250 0000 0000 	#Define	ssRX_Timeout	kSysFlags,3	;cleared by host read
-00251 0000 	;
-00252 0000 0000 	kSysFlags	EQU	0
-00253 0000 	;================================================================================================
-00254 0000 	;  Bank1 Ram 0A0h-0EFh 80 Bytes
-00255 0000 		cblock	0x0A0
-00256 0000 00A0 		RX_ParseFlags
-00257 0000 00A1 		RX_Flags
-00258 0000 00A2 		RX_DataCount
-00259 0000 00A3 		RX_CSUM
-00260 0000 00A4 		RX_SrcAdd:RP_AddressBytes
-00261 0000 00A5 		RX_DstAdd:RP_AddressBytes
-00262 0000 00A6 		RX_TempData:RP_DataBytes
-00263 0000 00AA 		RX_Data:RP_DataBytes
-00264 0000 00AE 		TX_Data:RP_DataBytes
-00265 0000 	;
-00266 0000 		endc
-00267 0000 	;
-00268 0000 	;
-00269 0000 	;================================================================================================
-00270 0000 	;  Bank2 Ram 120h-16Fh 80 Bytes
+00250 0000 	;---------------
+00251 0000 0032 	#Define	FirstRAMParam	SysMode
+00252 0000 0035 	#Define	LastRAMParam	SysFlags
+00253 0000 	;
+00254 0000 0000 	#Define	ssRX_Timeout	kSysFlags,3	;cleared by host read
+00255 0000 	;
+00256 0000 0000 	kSysFlags	EQU	0
+00257 0000 	;================================================================================================
+00258 0000 	;  Bank1 Ram 0A0h-0EFh 80 Bytes
+00259 0000 		cblock	0x0A0
+00260 0000 00A0 		RX_ParseFlags
+00261 0000 00A1 		RX_Flags
+00262 0000 00A2 		RX_DataCount
+00263 0000 00A3 		RX_CSUM
+00264 0000 00A4 		RX_SrcAdd:RP_AddressBytes
+00265 0000 00A5 		RX_DstAdd:RP_AddressBytes
+00266 0000 00A6 		RX_TempData:RP_DataBytes
+00267 0000 00AA 		RX_Data:RP_DataBytes
+00268 0000 00AE 		TX_Data:RP_DataBytes
+00269 0000 	;
+00270 0000 		endc
 00271 0000 	;
-00272 0000 0002 	#Define	Ser_Buff_Bank	2
-00273 0000 	;
-00274 0000 		cblock	0x120
-00275 0000 0120 		Ser_In_Bytes		;Bytes in Ser_In_Buff
-00276 0000 0121 		Ser_Out_Bytes		;Bytes in Ser_Out_Buff
-00277 0000 0122 		Ser_In_InPtr
-00278 0000 0123 		Ser_In_OutPtr
-00279 0000 0124 		Ser_Out_InPtr
-00280 0000 0125 		Ser_Out_OutPtr
-00281 0000 0126 		Ser_In_Buff:20
-00282 0000 0146 		Ser_Out_Buff:20
-00283 0000 		endc
-00284 0000 	;
-00285 0000 	;================================================================================================
-00286 0000 	;  Bank3 Ram 1A0h-1EFh 80 Bytes
-00287 0000 	;
-00288 0000 	;=========================================================================================
-00289 0000 	;  Bank4 Ram 220h-26Fh 80 Bytes
-00290 0000 	;=========================================================================================
+00272 0000 	;
+00273 0000 	;================================================================================================
+00274 0000 	;  Bank2 Ram 120h-16Fh 80 Bytes
+00275 0000 	;
+00276 0000 0002 	#Define	Ser_Buff_Bank	2
+00277 0000 	;
+00278 0000 		cblock	0x120
+00279 0000 0120 		Ser_In_Bytes		;Bytes in Ser_In_Buff
+00280 0000 0121 		Ser_Out_Bytes		;Bytes in Ser_Out_Buff
+00281 0000 0122 		Ser_In_InPtr
+00282 0000 0123 		Ser_In_OutPtr
+00283 0000 0124 		Ser_Out_InPtr
+00284 0000 0125 		Ser_Out_OutPtr
+00285 0000 0126 		Ser_In_Buff:20
+00286 0000 0146 		Ser_Out_Buff:20
+00287 0000 		endc
+00288 0000 	;
+00289 0000 	;================================================================================================
+00290 0000 	;  Bank3 Ram 1A0h-1EFh 80 Bytes
 Blinker5.asm                                                          Page: 4
 /Users/davidflynn/Projects/Blinker5/Firmware/
 
-00291 0000 	;  Bank5 Ram 2A0h-2EFh 80 Bytes
-00292 0000 	;
-00293 0000 	;=======================================================================================================
-00294 0000 	;  Common Ram 70-7F same for all banks
-00295 0000 	;      except for ISR_W_Temp these are used for paramiter passing and temp vars
-00296 0000 	;=======================================================================================================
-00297 0000 	;
-00298 0000 		cblock	0x70
-00299 0000 0070 		Param70
-00300 0000 0071 		Param71
-00301 0000 0072 		Param72
-00302 0000 0073 		Param73
-00303 0000 0074 		Param74
-00304 0000 0075 		Param75
-00305 0000 0076 		Param76
-00306 0000 0077 		Param77
-00307 0000 0078 		Param78
-00308 0000 0079 		Param79
-00309 0000 007A 		Param7A
-00310 0000 007B 		Param7B
-00311 0000 007C 		Param7C
-00312 0000 007D 		Param7D
-00313 0000 007E 		Param7E
-00314 0000 007F 		Param7F
-00315 0000 		endc
-00316 0000 	;
-00317 0000 	;=========================================================================================
-00318 0000 	;Conditions
-00319 0000 0080 	HasISR	EQU	0x80	;used to enable interupts 0x80=true 0x00=false
+00291 0000 	;
+00292 0000 	;=========================================================================================
+00293 0000 	;  Bank4 Ram 220h-26Fh 80 Bytes
+00294 0000 	;=========================================================================================
+00295 0000 	;  Bank5 Ram 2A0h-2EFh 80 Bytes
+00296 0000 	;
+00297 0000 	;=======================================================================================================
+00298 0000 	;  Common Ram 70-7F same for all banks
+00299 0000 	;      except for ISR_W_Temp these are used for paramiter passing and temp vars
+00300 0000 	;=======================================================================================================
+00301 0000 	;
+00302 0000 		cblock	0x70
+00303 0000 0070 		Param70
+00304 0000 0071 		Param71
+00305 0000 0072 		Param72
+00306 0000 0073 		Param73
+00307 0000 0074 		Param74
+00308 0000 0075 		Param75
+00309 0000 0076 		Param76
+00310 0000 0077 		Param77
+00311 0000 0078 		Param78
+00312 0000 0079 		Param79
+00313 0000 007A 		Param7A
+00314 0000 007B 		Param7B
+00315 0000 007C 		Param7C
+00316 0000 007D 		Param7D
+00317 0000 007E 		Param7E
+00318 0000 007F 		Param7F
+00319 0000 		endc
 00320 0000 	;
 00321 0000 	;=========================================================================================
-00322 0000 	;==============================================================================================
-00323 0000 	; ID Locations
-00324 0000 		__idlocs	0x10d1
-00325 0000 	;
+00322 0000 	;Conditions
+00323 0000 0080 	HasISR	EQU	0x80	;used to enable interupts 0x80=true 0x00=false
+00324 0000 	;
+00325 0000 	;=========================================================================================
 00326 0000 	;==============================================================================================
-00327 0000 	; EEPROM locations (NV-RAM) 0x00..0x7F (offsets)
-00328 0000 	;
-00329 0000 	; default values
-00330 0000 		ORG	0xF000
-00331 F000 0000 		de	kSysMode	;nvSysMode
-00332 F001 0001 		de	kRS232_MasterAddr	;nvRS232_MasterAddr, 0x0F
-00333 F002 0002 		de	kRS232_SlaveAddr	;nvRS232_SlaveAddr, 0x10
-00334 F003 0000 		de	kSysFlags	;nvSysFlags
-00335 F004 	;
-00336 F004 		ORG	0xF0FF
-00337 F0FF 0000 		de	0x00	;Skip BootLoader
-00338 F100 	;
-00339 F100 		cblock	0x0000
-00340 F100 	;
-00341 F100 0000 		nvSysMode
-00342 F100 0001 		nvRS232_MasterAddr
-00343 F100 0002 		nvRS232_SlaveAddr
-00344 F100 0003 		nvSysFlags
-00345 F100 		endc
-00346 F100 	;
-00347 F100 0000 	#Define	nvFirstParamByte	nvSysMode
-00348 F100 0003 	#Define	nvLastParamByte	nvSysFlags
-00349 F100 	;
+00327 0000 	; ID Locations
+00328 0000 		__idlocs	0x10d1
+00329 0000 	;
+00330 0000 	;==============================================================================================
+00331 0000 	; EEPROM locations (NV-RAM) 0x00..0x7F (offsets)
+00332 0000 	;
+00333 0000 	; default values
+00334 0000 		ORG	0xF000
+00335 F000 0000 		de	kSysMode	;nvSysMode
+00336 F001 0001 		de	kRS232_MasterAddr	;nvRS232_MasterAddr, 0x0F
+00337 F002 0002 		de	kRS232_SlaveAddr	;nvRS232_SlaveAddr, 0x10
+00338 F003 0000 		de	kSysFlags	;nvSysFlags
+00339 F004 	;
+00340 F004 		ORG	0xF0FF
+00341 F0FF 0000 		de	0x00	;Skip BootLoader
+00342 F100 	;
+00343 F100 		cblock	0x0000
+00344 F100 	;
+00345 F100 0000 		nvSysMode
+00346 F100 0001 		nvRS232_MasterAddr
+00347 F100 0002 		nvRS232_SlaveAddr
+00348 F100 0003 		nvSysFlags
+00349 F100 		endc
 00350 F100 	;
-00351 F100 	;==============================================================================================
-00352 F100 	;============================================================================================
+00351 F100 0000 	#Define	nvFirstParamByte	nvSysMode
+00352 F100 0003 	#Define	nvLastParamByte	nvSysFlags
 00353 F100 	;
-00354 F100 1E00 	BootLoaderStart	EQU	0x1E00
-00355 F100 	;
-00356 F100 		ORG	0x000	; processor reset vector
-00357 0000 319E 		movlp	BootLoaderStart
-00358 0001 2E00 		goto	BootLoaderStart
-00359 0002 018A 	ProgStartVector	CLRF	PCLATH
-00360 0003 29AC 	  	goto	start	; go to beginning of program
-00361 0004 	;
-00362 0004 	;===============================================================================================
-00363 0004 	; Interupt Service Routine
-00364 0004 	;
-00365 0004 	; we loop through the interupt service routing every 0.008192 seconds
-00366 0004 	;
-00367 0004 	;
-00368 0004 		ORG	0x004	; interrupt vector location
-00369 0004 018A 		CLRF	PCLATH
-00370 0005 0188 		CLRF	BSR	; bank0
-00371 0006 	;
-00372 0006 	;
-00373 0006 1C91 		BTFSS	PIR1,TMR2IF
-00374 0007 281A 		goto	SystemTick_end
-00375 0008 	;
-00376 0008 1091 		BCF	PIR1,TMR2IF	; reset interupt flag bit
-00377 0009 	;------------------
-00378 0009 	; These routines run 100 times per second
-00379 0009 	;
-00380 0009 	;------------------
-00381 0009 	;Decrement timers until they are zero
-00382 0009 	;
-00383 0009 205E 		call	DecTimer1	;if timer 1 is not zero decrement
-00384 000A 205C 		call	DecTimer2
-00385 000B 205A 		call	DecTimer3
-00386 000C 2058 		call	DecTimer4
-00387 000D 	;
-00388 000D 	;-----------------------------------------------------------------
-00389 000D 	; blink LEDs
+00354 F100 	;
+00355 F100 	;==============================================================================================
+00356 F100 	;============================================================================================
+00357 F100 	;
+00358 F100 1E00 	BootLoaderStart	EQU	0x1E00
+00359 F100 	;
+00360 F100 		ORG	0x000	; processor reset vector
+00361 0000 319E 		movlp	BootLoaderStart
+00362 0001 2E00 		goto	BootLoaderStart
+00363 0002 018A 	ProgStartVector	CLRF	PCLATH
+00364 0003 29AC 	  	goto	start	; go to beginning of program
+00365 0004 	;
+00366 0004 	;===============================================================================================
+00367 0004 	; Interupt Service Routine
+00368 0004 	;
+00369 0004 	; we loop through the interupt service routing every 0.008192 seconds
+00370 0004 	;
+00371 0004 	;
+00372 0004 		ORG	0x004	; interrupt vector location
+00373 0004 018A 		CLRF	PCLATH
+00374 0005 0188 		CLRF	BSR	; bank0
+00375 0006 	;
+00376 0006 	;
+00377 0006 1C91 		BTFSS	PIR1,TMR2IF
+00378 0007 281A 		goto	SystemTick_end
+00379 0008 	;
+00380 0008 1091 		BCF	PIR1,TMR2IF	; reset interupt flag bit
+00381 0009 	;------------------
+00382 0009 	; These routines run 100 times per second
+00383 0009 	;
+00384 0009 	;------------------
+00385 0009 	;Decrement timers until they are zero
+00386 0009 	;
+00387 0009 205E 		call	DecTimer1	;if timer 1 is not zero decrement
+00388 000A 205C 		call	DecTimer2
+00389 000B 205A 		call	DecTimer3
 Blinker5.asm                                                          Page: 5
 /Users/davidflynn/Projects/Blinker5/Firmware/
 
-00390 000D 	;
-00391 000D 	; All LEDs off
-00392 000D 0021 		movlb	0x01	;bank 1
-00393 000E 178C 		bsf	SysLED_Tris
-00394 000F 	;
-00395 000F 	; Read Switches
-00396 000F 0020 		movlb	0x00	;bank 0
-00397 0010 	;--------------------
-00398 0010 	; Sys LED time
-00399 0010 0BA3 		DECFSZ	SysLEDCount,F	;Is it time?
-00400 0011 3208 		bra	SystemBlink_end	; No, not yet
-00401 0012 	;
-00402 0012 08A1 		movf	SysLED_Blinks,F
-00403 0013 		SKPNZ		;Standard Blinking?
-00403 0013 1903      M		BTFSC	STATUS,Z		BTFSC	STATUS,Z
-00404 0014 3200 		bra	SystemBlink_Std	; Yes
-00405 0015 	;
-00406 0015 	; custom blinking
-00407 0015 	;
-00408 0015 01A2 	SystemBlink_Std	CLRF	SysLED_BlinkCount
-00409 0016 0820 		MOVF	SysLED_Time,W
-00410 0017 00A3 	SystemBlink_DoIt	MOVWF	SysLEDCount
-00411 0018 0021 		movlb	0x01	;bank 1
-00412 0019 138C 		bcf	SysLED_Tris	;LED ON
-00413 001A 	SystemBlink_end:
-00414 001A 	;
-00415 001A 	;
-00416 001A 	SystemTick_end:
-00417 001A 	;
-00418 001A 	;-----------------------------------------------------------------------------------------
-00419 001A 	;AUSART Serial ISR
-00420 001A 	;
-00421 001A 1E91 	IRQ_Ser	BTFSS	PIR1,RCIF	;RX has a byte?
-00422 001B 3201 		BRA	IRQ_Ser_End
-00423 001C 20B2 		CALL	RX_TheByte
-00424 001D 	;
-00425 001D 	IRQ_Ser_End:
-00426 001D 	;-----------------------------------------------------------------------------------------
-00427 001D 0009 		retfie		; return from interrupt
-00428 001E 	;
-00429 001E 	;
-00430 001E 	;=========================================================================================
-00431 001E 	;*****************************************************************************************
-00432 001E 	;=========================================================================================
+00390 000C 2058 		call	DecTimer4
+00391 000D 	;
+00392 000D 	;-----------------------------------------------------------------
+00393 000D 	; blink LEDs
+00394 000D 	;
+00395 000D 	; All LEDs off
+00396 000D 0021 		movlb	0x01	;bank 1
+00397 000E 178C 		bsf	SysLED_Tris
+00398 000F 	;
+00399 000F 	; Read Switches
+00400 000F 0020 		movlb	0x00	;bank 0
+00401 0010 	;--------------------
+00402 0010 	; Sys LED time
+00403 0010 0BA3 		DECFSZ	SysLEDCount,F	;Is it time?
+00404 0011 3208 		bra	SystemBlink_end	; No, not yet
+00405 0012 	;
+00406 0012 08A1 		movf	SysLED_Blinks,F
+00407 0013 		SKPNZ		;Standard Blinking?
+00407 0013 1903      M		BTFSC	STATUS,Z		BTFSC	STATUS,Z
+00408 0014 3200 		bra	SystemBlink_Std	; Yes
+00409 0015 	;
+00410 0015 	; custom blinking
+00411 0015 	;
+00412 0015 01A2 	SystemBlink_Std	CLRF	SysLED_BlinkCount
+00413 0016 0820 		MOVF	SysLED_Time,W
+00414 0017 00A3 	SystemBlink_DoIt	MOVWF	SysLEDCount
+00415 0018 0021 		movlb	0x01	;bank 1
+00416 0019 138C 		bcf	SysLED_Tris	;LED ON
+00417 001A 	SystemBlink_end:
+00418 001A 	;
+00419 001A 	;
+00420 001A 	SystemTick_end:
+00421 001A 	;
+00422 001A 	;-----------------------------------------------------------------------------------------
+00423 001A 	;AUSART Serial ISR
+00424 001A 	;
+00425 001A 1E91 	IRQ_Ser	BTFSS	PIR1,RCIF	;RX has a byte?
+00426 001B 3201 		BRA	IRQ_Ser_End
+00427 001C 20B2 		CALL	RX_TheByte
+00428 001D 	;
+00429 001D 	IRQ_Ser_End:
+00430 001D 	;-----------------------------------------------------------------------------------------
+00431 001D 0009 		retfie		; return from interrupt
+00432 001E 	;
 00433 001E 	;
-00434 001E 		include <F1847_Common.inc>
+00434 001E 	;=========================================================================================
+00435 001E 	;*****************************************************************************************
+00436 001E 	;=========================================================================================
+00437 001E 	;
+00438 001E 		include <F1847_Common.inc>
 00001 001E 	;=========================================================================================
 00002 001E 	; Commonly used routines PIC16F1847 version
 00003 001E 	;
@@ -504,13 +508,13 @@ Blinker5.asm                                                          Page: 1
 00047 001E 	; EEWrite	(0+0) Write EEPROM address in EEAdrTemp, Data in EEDataTemp, FSR0
 00048 001E 	;
 00049 001E 	;=========================================================================================
+Blinker5.asm                                                          Page: 6
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00050 001E 		ifndef UseEEParams
 00052 001E 		endif
 00053 001E 	;=========================================================================================
 00054 001E 	; Clears all RAM
-Blinker5.asm                                                          Page: 6
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00055 001E 	; Entry: none
 00056 001E 	; Exit: none
 00057 001E 	; RAM used: All
@@ -606,13 +610,13 @@ Blinker5.asm                                                          Page: 1
 00145 005E 3028 	DecTimer1	movlw	Timer1Hi
 00146 005F 	;DecTimer
 00147 005F 	; entry: FSR=Timer(n)Hi
+Blinker5.asm                                                          Page: 7
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00148 005F 0084 	DecTimer	MOVWF	FSR0L
 00149 0060 3000 		movlw	High Timer4Hi
 00150 0061 0085 		movwf	FSR0H
 00151 0062 0013 		MOVIW	FSR0--	;TimerNHi
-Blinker5.asm                                                          Page: 7
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00152 0063 0400 		IORWF	INDF0,W	;TimerNLo
 00153 0064 		SKPNZ
 00153 0064 1903      M		BTFSC	STATUS,Z		BTFSC	STATUS,Z
@@ -708,13 +712,13 @@ Blinker5.asm                                                          Page: 1
 00258 0092 	;
 00259 0092 0825 	EEWrite	MOVF	EEAddrTemp,W
 00260 0093 0023 		MOVLB	0x03	;Bank 3
+Blinker5.asm                                                          Page: 8
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00261 0094 0091 		movwf	EEADR	;Address to write
 00262 0095 0020 		movlb	0x00	; bank 0
 00263 0096 0826 		movf	EEDataTemp,W
 00264 0097 0023 		movlb	0x03
-Blinker5.asm                                                          Page: 8
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00265 0098 0093 		movwf	EEDAT
 00266 0099 1315 		bcf	EECON1,CFGS	;not config mem
 00267 009A 1395 		bcf	EECON1,EEPGD	;Data memory
@@ -741,7 +745,7 @@ Blinker5.asm                                                          Page: 1
 00288 00AA 	;
 00289 00AA 	;
 00290 00AA 	;
-00435 00AA 		include <SerBuff1938.inc>
+00439 00AA 		include <SerBuff1938.inc>
 00001 00AA 	;=========================================================================================
 00002 00AA 	;
 00003 00AA 	;    Filename:      SerBuff.inc
@@ -810,13 +814,13 @@ Blinker5.asm                                                          Page: 1
 00066 00AA 	; Handle Serial Communications
 00067 00AA 	;	BTFSC	PIR1,TXIF	;TX done?
 00068 00AA 	;	CALL	TX_TheByte	; Yes
+Blinker5.asm                                                          Page: 9
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00069 00AA 	;
 00070 00AA 	; move any serial data received into the 32 byte input buffer
 00071 00AA 	;	BTFSS	DataReceivedFlag
 00072 00AA 	;	BRA	ML_Ser_Out
-Blinker5.asm                                                          Page: 9
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00073 00AA 	;	MOVF	RXByte,W
 00074 00AA 	;	BCF	DataReceivedFlag
 00075 00AA 	;	CALL	StoreSerIn
@@ -912,13 +916,13 @@ Blinker5.asm                                                          Page: 1
 00162 00B8 0020 		movlb	0x00	; bank 0
 00163 00B9 00B0 		MOVWF	RXByte
 00164 00BA 14B1 		BSF	DataReceivedFlag
+Blinker5.asm                                                          Page: 10
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00165 00BB 0008 		RETURN
 00166 00BC 	;
 00167 00BC 0819 	RX_TheByte_Err	MOVF	RCREG,W	;bad byte so drop it
 00168 00BD 01B0 		CLRF	RXByte
-Blinker5.asm                                                          Page: 10
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00169 00BE 121D 		BCF	RCSTA,CREN
 00170 00BF 111D 		BCF	RCSTA,FERR
 00171 00C0 109D 		BCF	RCSTA,OERR
@@ -1014,13 +1018,13 @@ Blinker5.asm                                                          Page: 1
 00260 00F1 	;
 00261 00F1 	; Entry: W = byte to store
 00262 00F1 	; Exit: Param78 & W = byte stored, Bank 0
+Blinker5.asm                                                          Page: 11
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00263 00F1 	; Ram used: Param78, FSR0
 00264 00F1 	; Calls: (0) none
 00265 00F1 	;
 00266 00F1 00F8 	StoreSerOut	MOVWF	Param78
-Blinker5.asm                                                          Page: 11
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00267 00F2 0022 		MOVLB	Ser_Buff_Bank
 00268 00F3 0AA1 		INCF	Ser_Out_Bytes,F
 00269 00F4 	;	
@@ -1095,7 +1099,7 @@ Blinker5.asm                                                          Page: 1
 00336 0118 	;
 00337 0118 	;
 00338 0118 	;
-00436 0118 		include <RS232_Parse.inc>
+00440 0118 		include <RS232_Parse.inc>
 00001 0118 	;=========================================================================================
 00002 0118 	;
 00003 0118 	;    Filename:      RS232_Parse.inc
@@ -1116,13 +1120,13 @@ Blinker5.asm                                                          Page: 1
 00018 0118 	;=========================================================================================
 00019 0118 	; Notes:
 00020 0118 	;
+Blinker5.asm                                                          Page: 12
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00021 0118 	; History:
 00022 0118 	; 1.0b5  5/25/2018	RS232_MasterAddr, RS232_SlaveAddr now in ram
 00023 0118 	; 1.0d4  5/18/2018	Added RS232_ClearTXData, RS232_Send.
 00024 0118 	; 1.0d3  5/17/2018	Used Timer1Lo for RXTimeout.
-Blinker5.asm                                                          Page: 12
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00025 0118 	; 1.0d2  4/26/2018	Comments, used in robot arm project.
 00026 0118 	; 1.0d1  1/12/2016	Modified for I2C to RS-232 8 byte packets.
 00027 0118 	; 1.0d1  11/9/2015	Adapted for QD Tester
@@ -1218,13 +1222,13 @@ Blinker5.asm                                                          Page: 1
 00120 011E 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
 00121 011F 3203 		bra	RS232_Parse_Byte	; no
 00122 0120 	;timed out
+Blinker5.asm                                                          Page: 13
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00123 0120 1580 		bsf	ssRX_Timeout
 00124 0121 0021 		movlb	0x01	;bank 1
 00125 0122 01A0 		clrf	RX_ParseFlags
 00126 0123 	;
-Blinker5.asm                                                          Page: 13
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00127 0123 20D2 	RS232_Parse_Byte	CALL	GetSerIn
 00128 0124 1C78 		BTFSS	Param78,0	;Got a byte?
 00129 0125 0008 		RETURN		; No
@@ -1320,13 +1324,13 @@ Blinker5.asm                                                          Page: 1
 00242 0163 0080 		movwf	INDF0
 00243 0164 0AA2 		incf	RX_DataCount,F
 00244 0165 3004 		movlw	RP_DataBytes
+Blinker5.asm                                                          Page: 14
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00245 0166 0222 		subwf	RX_DataCount,W
 00246 0167 		SKPZ
 00246 0167 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
 00247 0168 33E1 		bra	RS232_Parse_Rtn
-Blinker5.asm                                                          Page: 14
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00248 0169 1720 		bsf	AllDataRXd
 00249 016A 	;
 00250 016A 		if UseRS232Chksum
@@ -1422,13 +1426,13 @@ Blinker5.asm                                                          Page: 1
 00348 019A 0833 		movf	RS232_MasterAddr,W	;destination address
 00349 019B 06FA 		xorwf	Param7A,F
 00350 019C 20F1 		call	StoreSerOut
+Blinker5.asm                                                          Page: 15
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00351 019D 	;
 00352 019D 		if RP_LongAddr
 00356 019D 		endif
 00357 019D 	;
-Blinker5.asm                                                          Page: 15
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00358 019D 0021 		movlb	1	;bank 1
 00359 019E 3004 		movlw	RP_DataBytes
 00360 019F 00F9 		movwf	Param79
@@ -1475,131 +1479,273 @@ Blinker5.asm                                                          Page: 1
 00401 01AC 	;
 00402 01AC 	;
 00403 01AC 	;
-00437 01AC 	;
-00438 01AC 	;=========================================================================================
-00439 01AC 	;
-00440 01AC 	start	mLongCall	InitializeIO
-00440 01AC 3188      M		movlp	InitializeIO	                       movlp                  Destination
-00440 01AD 20D9      M		call	InitializeIO	                       call                   Destination
-00440 01AE 3181      M		movlp	$	                       movlp                  $
-00441 01AF 	;
-00442 01AF 	;
-00443 01AF 	;=========================================================================================
-00444 01AF 	;*****************************************************************************************
-00445 01AF 	;=========================================================================================
-00446 01AF 0064 	MainLoop	CLRWDT
-00447 01B0 	;
-00448 01B0 		if useRS232
-00457 01B0 		endif
-00458 01B0 	ML_1:
-00459 01B0 	;
-00460 01B0 0020 		MOVLB	0x00
-00461 01B1 	;
-00462 01B1 	;
-00463 01B1 		if useRS232
-00486 01B1 		endif
-00487 01B1 	;----------------------
-00488 01B1 	;
-00489 01B1 0020 		movlb	0x00	;bank 0
-00490 01B2 0832 		movf	SysMode,W
-00491 01B3 000B 		brw
-00492 01B4 29B6 		goto	DoModeZero
-00493 01B5 	;
-00494 01B5 	ModeReturn:
-00495 01B5 	;
-00496 01B5 29AF 		goto	MainLoop
-00497 01B6 	;=========================================================================================
-00498 01B6 	;*****************************************************************************************
-00499 01B6 	;=========================================================================================
-00500 01B6 	;Run an ouput sequence
-00501 01B6 	;
-00502 01B6 0048 	OutMask	EQU	b'1001000'
-00503 01B6 0002 	OutJ2	EQU	0x02
-00504 01B6 0001 	OutJ3	EQU	0x01
-00505 01B6 0040 	OutJ4	EQU	0x40
-00506 01B6 0004 	OutJ5	EQU	0x04
-00507 01B6 0008 	OutJ6	EQU	0x08
-00508 01B6 0010 	OutJ7	EQU	0x10
-00509 01B6 	;
-00510 01B6 	DoModeZero:
-00511 01B6 0020 		movlb	0x00	;bank 0
-00512 01B7 08A7 		movf	Timer1Lo,F
-00513 01B8 		SKPZ		;Timer1Lo=0?
-00513 01B8 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
-00514 01B9 0008 		return		; no
-00515 01BA 21C4 		call	GetSeqData
+00441 01AC 	;
+00442 01AC 	;=========================================================================================
+00443 01AC 	;
+00444 01AC 	start	mLongCall	InitializeIO
+00444 01AC 3188      M		movlp	InitializeIO	                       movlp                  Destination
+00444 01AD 20D9      M		call	InitializeIO	                       call                   Destination
+00444 01AE 3181      M		movlp	$	                       movlp                  $
+00445 01AF 	;
+00446 01AF 	;
+00447 01AF 	;=========================================================================================
+00448 01AF 	;*****************************************************************************************
+00449 01AF 	;=========================================================================================
+00450 01AF 0064 	MainLoop	CLRWDT
+00451 01B0 	;
+00452 01B0 		if useRS232
+00461 01B0 		endif
+00462 01B0 	ML_1:
+00463 01B0 	;
+00464 01B0 0020 		MOVLB	0x00
+00465 01B1 	;
+00466 01B1 	;
+00467 01B1 		if useRS232
+00490 01B1 		endif
+00491 01B1 	;----------------------
+00492 01B1 	;
+00493 01B1 0020 		movlb	0x00	;bank 0
+00494 01B2 0832 		movf	SysMode,W
+00495 01B3 000B 		brw
+00496 01B4 29B6 		goto	DoModeZero
+00497 01B5 	;
+00498 01B5 	ModeReturn:
+00499 01B5 	;
+00500 01B5 29AF 		goto	MainLoop
+00501 01B6 	;=========================================================================================
+00502 01B6 	;*****************************************************************************************
+00503 01B6 	;=========================================================================================
+00504 01B6 	;Run an ouput sequence
+00505 01B6 	;
+00506 01B6 00A0 	OutMask	EQU	b'10100000'
+00507 01B6 0002 	OutJ2	EQU	0x02
+00508 01B6 0001 	OutJ3	EQU	0x01
+00509 01B6 0040 	OutJ4	EQU	0x40
+00510 01B6 0004 	OutJ5	EQU	0x04
+00511 01B6 0008 	OutJ6	EQU	0x08
+00512 01B6 0010 	OutJ7	EQU	0x10
+00513 01B6 	;
+00514 01B6 	DoModeZero:
+00515 01B6 0020 		movlb	0x00	;bank 0
+00516 01B7 08A9 		movf	Timer2Lo,F
 Blinker5.asm                                                          Page: 16
 /Users/davidflynn/Projects/Blinker5/Firmware/
 
-00516 01BB 0878 		movf	Param78,W
-00517 01BC 00A9 		movwf	Timer2Lo
-00518 01BD 	;
-00519 01BD 0022 		movlb	0x02	;bank 2
-00520 01BE 080C 		movf	LATA,W
-00521 01BF 3948 		andlw	OutMask
-00522 01C0 0479 		iorwf	Param79,W
-00523 01C1 008C 		movwf	LATA
-00524 01C2 0020 		movlb	0x00	;bank 0
-00525 01C3 	;
-00526 01C3 29B5 		goto	ModeReturn
-00527 01C4 	;
-00528 01C4 	; Data
-00529 01C4 	;
-00530 01C4 0032 	FinTime	EQU	.50	;1/2 second
+00517 01B8 		SKPZ		;Timer1Lo=0?
+00517 01B8 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
+00518 01B9 29B5 		goto	ModeReturn	; no
+00519 01BA 21C4 		call	GetSeqData
+00520 01BB 0878 		movf	Param78,W
+00521 01BC 00A9 		movwf	Timer2Lo
+00522 01BD 	;
+00523 01BD 0022 		movlb	0x02	;bank 2
+00524 01BE 080C 		movf	LATA,W
+00525 01BF 39A0 		andlw	OutMask
+00526 01C0 0479 		iorwf	Param79,W
+00527 01C1 008C 		movwf	LATA
+00528 01C2 0020 		movlb	0x00	;bank 0
+00529 01C3 	;
+00530 01C3 29B5 		goto	ModeReturn
 00531 01C4 	;
-00532 01C4 	;==================================
-00533 01C4 	; Exit: Param78 = time, Param79 = output data bits
-00534 01C4 	; 
-00535 01C4 0824 	GetSeqData	movf	SequenceIndex,W
-00536 01C5 21D1 		call	SequenceData
-00537 01C6 00F8 		movwf	Param78
-00538 01C7 0AD1 		incf	SequenceData,F
-00539 01C8 0824 		movf	SequenceIndex,W
-00540 01C9 21D1 		call	SequenceData
-00541 01CA 00F9 		movwf	Param79
-00542 01CB 0AD1 		incf	SequenceData,F
-00543 01CC 0478 		iorwf	Param78,W
-00544 01CD 		SKPZ
-00544 01CD 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
-00545 01CE 0008 		return
-00546 01CF 01A4 		clrf	SequenceIndex
-00547 01D0 33F3 		bra	GetSeqData
-00548 01D1 	;
-00549 01D1 	;	if oldCode
-00550 01D1 	;====================================
-00551 01D1 	; Sequence one fin ON at a time, 5 fins
-00552 01D1 	;	
-00553 01D1 000B 	SequenceData	brw		;(PC)+(W) -> (PC)
-00554 01D2 3432 		RETLW	FinTime
-00555 01D3 3402 		RETLW	OutJ2
-00556 01D4 3432 		RETLW	FinTime
-00557 01D5 3401 		RETLW	OutJ3
-00558 01D6 3432 		RETLW	FinTime
-00559 01D7 3440 		RETLW	OutJ4
-00560 01D8 3432 		RETLW	FinTime
-00561 01D9 3404 		RETLW	OutJ5
-00562 01DA 3432 		RETLW	FinTime
-00563 01DB 3408 		RETLW	OutJ6
-00564 01DC 	;end of sequence
-00565 01DC 3400 		RETLW	0x00
-00566 01DD 3400 		RETLW	0X00
-00567 01DE 	;	endif
-00568 01DE 	;
-00569 01DE 		if oldCode
-00587 01DE 		endif	
-00588 01DE 	;	
-00589 01DE 	;=========================================================================================
-00590 01DE 	; ***************************************************************************************
-00591 01DE 	;=========================================================================================
-00592 01DE 	;
-00593 01DE 	;=========================================================================================
-00594 01DE 	;=========================================================================================
-00595 01DE 	;
-00596 01DE 	;
-00597 01DE 	;
-00598 01DE 	;
-00599 01DE 		org 0x800
-00600 0800 		include <SerialCmds.inc>
+00532 01C4 	; Data
+00533 01C4 	;
+00534 01C4 	;
+00535 01C4 	;==================================
+00536 01C4 	; Exit: Param78 = time, Param79 = output data bits
+00537 01C4 	; 
+00538 01C4 0824 	GetSeqData	movf	SequenceIndex,W
+00539 01C5 21D1 		call	SequenceData	;Get Time 1..255 1/100ths seconds
+00540 01C6 00F8 		movwf	Param78	; Save in Param78
+00541 01C7 0AA4 		incf	SequenceIndex,F	;advance pointer
+00542 01C8 0824 		movf	SequenceIndex,W
+00543 01C9 21D1 		call	SequenceData	;Get output bits 1=ON
+00544 01CA 00F9 		movwf	Param79	; Save in Param79
+00545 01CB 0AA4 		incf	SequenceIndex,F	;advance pointer
+00546 01CC 0478 		iorwf	Param78,W	;Both time and bits are 0x00?
+00547 01CD 		SKPZ
+00547 01CD 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
+00548 01CE 0008 		return		; No
+00549 01CF 01A4 		clrf	SequenceIndex	; Yes, restart at beginning
+00550 01D0 33F3 		bra	GetSeqData
+00551 01D1 	;
+00552 01D1 		if NC_Blinker
+00553 01D1 	;====================================
+00554 01D1 	; Sequence white/yellow Nosecone blinker
+00555 01D1 	;	
+00556 01D1 000B 	SequenceData	brw		;(PC)+(W) -> (PC)
+00557 01D2 34C8 		RETLW	.200	;2 seconds white
+00558 01D3 3402 		RETLW	OutJ2
+00559 01D4 	;
+00560 01D4 340A 		RETLW	.10	;dark for 0.1 seconds
+00561 01D5 3400 		RETLW	.00
+00562 01D6 	;
+00563 01D6 3432 		RETLW	.50	;1/2 second yellow
+00564 01D7 3401 		RETLW	OutJ3
+00565 01D8 	;
+00566 01D8 340A 		RETLW	.10	;dark for 0.1 seconds
+00567 01D9 3400 		RETLW	.00
+00568 01DA 	;
+00569 01DA 3496 		RETLW	.150	;1.5 seconds white
+00570 01DB 3402 		RETLW	OutJ2
+00571 01DC 	;
+00572 01DC 340A 		RETLW	.10	;dark for 0.1 seconds
+00573 01DD 3400 		RETLW	.00
+00574 01DE 	;
+00575 01DE 3432 		RETLW	.50	;0.5 second yellow
+00576 01DF 3401 		RETLW	OutJ3
+00577 01E0 	;
+00578 01E0 340A 		RETLW	.10	;dark for 0.1 seconds
+00579 01E1 3400 		RETLW	.00
+00580 01E2 	;
+00581 01E2 3464 		RETLW	.100	;1.0 seconds white
+00582 01E3 3402 		RETLW	OutJ2
+00583 01E4 	;
+00584 01E4 340A 		RETLW	.10	;dark for 0.1 seconds
+00585 01E5 3400 		RETLW	.00
+00586 01E6 	;
+00587 01E6 3432 		RETLW	.50	;0.5 second yellow
+00588 01E7 3401 		RETLW	OutJ3
+00589 01E8 	;
+00590 01E8 340A 		RETLW	.10	;dark for 0.1 seconds
+00591 01E9 3400 		RETLW	.00
+00592 01EA 	;
+00593 01EA 3432 		RETLW	.50	;0.5 seconds white
+00594 01EB 3402 		RETLW	OutJ2
+00595 01EC 	;
+00596 01EC 340A 		RETLW	.10	;dark for 0.1 seconds
+00597 01ED 3400 		RETLW	.00
+00598 01EE 	;
+00599 01EE 3432 		RETLW	.50	;0.5 second yellow
+00600 01EF 3401 		RETLW	OutJ3
+00601 01F0 	;
+00602 01F0 340A 		RETLW	.10	;dark for 0.1 seconds
+00603 01F1 3400 		RETLW	.00
+00604 01F2 	;
+00605 01F2 3432 		RETLW	.50	;0.5 seconds white
+00606 01F3 3402 		RETLW	OutJ2
+00607 01F4 	;
+00608 01F4 340A 		RETLW	.10	;dark for 0.1 seconds
+00609 01F5 3400 		RETLW	.00
+00610 01F6 	;
+00611 01F6 3464 		RETLW	.100	;1.0 second yellow
+00612 01F7 3401 		RETLW	OutJ3
+00613 01F8 	;
+Blinker5.asm                                                          Page: 17
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
+00614 01F8 340A 		RETLW	.10	;dark for 0.1 seconds
+00615 01F9 3400 		RETLW	.00
+00616 01FA 	;
+00617 01FA 3432 		RETLW	.50	;0.5 seconds white
+00618 01FB 3402 		RETLW	OutJ2
+00619 01FC 	;
+00620 01FC 340A 		RETLW	.10	;dark for 0.1 seconds
+00621 01FD 3400 		RETLW	.00
+00622 01FE 	;
+00623 01FE 3496 		RETLW	.150	;1.5 second yellow
+00624 01FF 3401 		RETLW	OutJ3
+00625 0200 	;
+00626 0200 340A 		RETLW	.10	;dark for 0.1 seconds
+00627 0201 3400 		RETLW	.00
+00628 0202 	;
+00629 0202 3432 		RETLW	.50	;0.5 seconds white
+00630 0203 3402 		RETLW	OutJ2
+00631 0204 	;
+00632 0204 340A 		RETLW	.10	;dark for 0.1 seconds
+00633 0205 3400 		RETLW	.00
+00634 0206 	;
+00635 0206 34C8 		RETLW	.200	;2.0 second yellow
+00636 0207 3401 		RETLW	OutJ3
+00637 0208 	;
+00638 0208 340A 		RETLW	.10	;dark for 0.1 seconds
+00639 0209 3400 		RETLW	.00
+00640 020A 	;
+00641 020A 3432 		RETLW	.50	;0.5 seconds white
+00642 020B 3402 		RETLW	OutJ2
+00643 020C 	;
+00644 020C 340A 		RETLW	.10	;dark for 0.1 seconds
+00645 020D 3400 		RETLW	.00
+00646 020E 	;
+00647 020E 3496 		RETLW	.150	;1.5 second yellow
+00648 020F 3401 		RETLW	OutJ3
+00649 0210 	;
+00650 0210 340A 		RETLW	.10	;dark for 0.1 seconds
+00651 0211 3400 		RETLW	.00
+00652 0212 	;
+00653 0212 3432 		RETLW	.50	;0.5 seconds white
+00654 0213 3402 		RETLW	OutJ2
+00655 0214 	;
+00656 0214 340A 		RETLW	.10	;dark for 0.1 seconds
+00657 0215 3400 		RETLW	.00
+00658 0216 	;
+00659 0216 3464 		RETLW	.100	;1.0 second yellow
+00660 0217 3401 		RETLW	OutJ3
+00661 0218 	;
+00662 0218 340A 		RETLW	.10	;dark for 0.1 seconds
+00663 0219 3400 		RETLW	.00
+00664 021A 	;
+00665 021A 3432 		RETLW	.50	;0.5 seconds white
+00666 021B 3402 		RETLW	OutJ2
+00667 021C 	;
+00668 021C 340A 		RETLW	.10	;dark for 0.1 seconds
+00669 021D 3400 		RETLW	.00
+00670 021E 	;
+00671 021E 3432 		RETLW	.50	;0.5 second yellow
+00672 021F 3401 		RETLW	OutJ3
+00673 0220 	;
+00674 0220 340A 		RETLW	.10	;dark for 0.1 seconds
+00675 0221 3400 		RETLW	.00
+00676 0222 	;
+00677 0222 3464 		RETLW	.100	;1.0 seconds white
+00678 0223 3402 		RETLW	OutJ2
+00679 0224 	;
+00680 0224 340A 		RETLW	.10	;dark for 0.1 seconds
+00681 0225 3400 		RETLW	.00
+00682 0226 	;
+00683 0226 3432 		RETLW	.50	;0.5 second yellow
+00684 0227 3401 		RETLW	OutJ3
+00685 0228 	;
+00686 0228 340A 		RETLW	.10	;dark for 0.1 seconds
+00687 0229 3400 		RETLW	.00
+00688 022A 	;
+00689 022A 3496 		RETLW	.150	;1.5 seconds white
+00690 022B 3402 		RETLW	OutJ2
+00691 022C 	;
+00692 022C 340A 		RETLW	.10	;dark for 0.1 seconds
+00693 022D 3400 		RETLW	.00
+00694 022E 	;
+00695 022E 3432 		RETLW	.50	;0.5 second yellow
+00696 022F 3401 		RETLW	OutJ3
+00697 0230 	;
+00698 0230 	;end of sequence
+00699 0230 3400 		RETLW	0x00
+00700 0231 3400 		RETLW	0X00
+00701 0232 		endif
+00702 0232 	;
+00703 0232 		if FinSeq
+00722 0232 		endif	
+00723 0232 	;
+00724 0232 		if oldCode
+00742 0232 		endif
+00743 0232 	;
+00744 0232 		if oldCode
+00762 0232 		endif	
+00763 0232 	;	
+00764 0232 	;=========================================================================================
+Blinker5.asm                                                          Page: 18
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
+00765 0232 	; ***************************************************************************************
+00766 0232 	;=========================================================================================
+00767 0232 	;
+00768 0232 	;=========================================================================================
+00769 0232 	;=========================================================================================
+00770 0232 	;
+00771 0232 	;
+00772 0232 	;
+00773 0232 	;
+00774 0232 		org 0x800
+00775 0800 		include <SerialCmds.inc>
 00001 0800 	;=========================================================================================
 00002 0800 	;
 00003 0800 	;    Filename:      SerialServoCmds.inc
@@ -1630,9 +1776,6 @@ Blinker5.asm                                                          Page: 1
 00028 0800 	;
 00029 0800 	; these commands save params and return a 0,0,0,0 packet with the new address
 00030 0800 00A1 	kCmd_SetMasterAddr	EQU	0xA1	;+1 data, return a zero packet
-Blinker5.asm                                                          Page: 17
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00031 0800 00A2 	kCmd_SetSlaveAddr	EQU	0xA2	;+1 data, return a zero packet
 00032 0800 	;
 00033 0800 	;Special packet (0xDD, 0xDD, 0x01, 0x02, 0xAA, 0x00, 0x00, 0x00, checksum)
@@ -1691,6 +1834,9 @@ Blinker5.asm                                                          Page: 1
 00074 0824 0008 	                       return
 00075 0825 0008 	                       return
 00076 0826 0008 	                       return
+Blinker5.asm                                                          Page: 19
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00077 0827 0008 		return
 00078 0828 0008 	                       return
 00079 0829 0008 	                       return
@@ -1732,9 +1878,6 @@ Blinker5.asm                                                          Page: 1
 00113 0847 0008 	                       return                                        ; Yes, oops
 00114 0848 3007 	                       movlw                  0x07
 00115 0849 0578 	                       andwf                  Param78,W
-Blinker5.asm                                                          Page: 18
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00116 084A 000B 	                       brw
 00117 084B 0008 	                       return
 00118 084C 0008 	                       return
@@ -1793,6 +1936,9 @@ Blinker5.asm                                                          Page: 1
 00169 087B 0008 	                       return
 00170 087C 0008 	                       return
 00171 087D 	;
+Blinker5.asm                                                          Page: 20
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00172 087D 	;Jump table for 0xA0 to 0xAF
 00173 087D 0878 	Dispatcher_5           movf                   Param78,W
 00174 087E 39F0 	                       andlw                  0xF0
@@ -1834,9 +1980,6 @@ Blinker5.asm                                                          Page: 1
 00208 089C 	;
 00209 089C 	;---kCmd_GetMode------------------
 00210 089C 0832 	Cmd_GetMode	movf	SysMode,W
-Blinker5.asm                                                          Page: 19
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00211 089D 001A 		movwi	FSR0++
 00212 089E 2800 		goto	RS232_Send_S0
 00213 089F 	;
@@ -1895,6 +2038,9 @@ Blinker5.asm                                                          Page: 1
 00250 08C1 33F8 		bra	Cmd_SendIDString_L1
 00251 08C2 	;
 00252 08C2 000B 	IDString	brw
+Blinker5.asm                                                          Page: 21
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00253 08C3 3444 		retlw	'D'
 00254 08C4 344D 		retlw	'M'
 00255 08C5 3446 		retlw	'F'
@@ -1924,7 +2070,7 @@ Blinker5.asm                                                          Page: 1
 00276 08D9 	;
 00277 08D9 	;=========================================================================================
 00278 08D9 	;=========================================================================================
-00601 08D9 		include <ssInit.inc>
+00776 08D9 		include <ssInit.inc>
 00001 08D9 	;=========================================================================================
 00002 08D9 	; call once
 00003 08D9 	;=========================================================================================
@@ -1936,9 +2082,6 @@ Blinker5.asm                                                          Page: 1
 00009 08DD 1415 		bsf	OPTION_REG,PS0	;111 8mhz/4/256=7812.5hz=128uS/Ct=0.032768S/ISR
 00010 08DE 1495 		bsf	OPTION_REG,PS1	;101 8mhz/4/64=31250hz=32uS/Ct=0.008192S/ISR
 00011 08DF 1515 		bsf	OPTION_REG,PS2
-Blinker5.asm                                                          Page: 20
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00012 08E0 	;
 00013 08E0 0021 		MOVLB	0x01	; bank 1
 00014 08E1 30F0 		MOVLW	OSCCON_Value
@@ -1997,6 +2140,9 @@ Blinker5.asm                                                          Page: 1
 00077 0905 	;-----------------------
 00078 0905 	;
 00079 0905 0020 		MOVLB	0x00
+Blinker5.asm                                                          Page: 22
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00080 0906 3064 		MOVLW	LEDTIME
 00081 0907 00A0 		MOVWF	SysLED_Time
 00082 0908 3001 		movlw	0x01
@@ -2013,9 +2159,9 @@ Blinker5.asm                                                          Page: 1
 00093 090F 	;
 00094 090F 0008 		return
 00095 0910 		return
-00602 0910 	;
-00603 0910 		org BootLoaderStart
-00604 1E00 		include <BootLoader1847.inc>
+00777 0910 	;
+00778 0910 		org BootLoaderStart
+00779 1E00 		include <BootLoader1847.inc>
 00001 1E00 	;************************************************
 00002 1E00 	; BootLoader for PIC16F1847
 00003 1E00 	; filename: Bootloader1847.inc
@@ -2038,9 +2184,6 @@ Blinker5.asm                                                          Page: 1
 00020 1E00 	;BootLoaderStart	EQU	0x1E00
 00021 1E00 	;	org BootLoaderStart
 00022 1E00 	;	include <Bootloader1847.inc>
-Blinker5.asm                                                          Page: 21
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00023 1E00 	;
 00024 1E00 	;  Reset vector:
 00025 1E00 	;  	movlp	high BootLoaderStart
@@ -2099,6 +2242,9 @@ Blinker5.asm                                                          Page: 1
 00078 1E00 002C 	#Define	MSN_Done	IH_Flags,0	;Most Significant Nibble
 00079 1E00 002C 	#Define	DataInBuffer	IH_Flags,1             ;SourceBuffer has data
 00080 1E00 	;
+Blinker5.asm                                                          Page: 23
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00081 1E00 	;IH_Type: Intel Hex Types
 00082 1E00 0000 	IHT_Data	EQU	0x00
 00083 1E00 0001 	IHT_End	EQU	0x01	;ie :00000001FF
@@ -2140,9 +2286,6 @@ Blinker5.asm                                                          Page: 1
 00119 1E00 	; RAM used: ALL
 00120 1E00 	;
 00121 1E00 279E 	BootLoader	call	InitializeBLIO	;returns w/ bank 0 selected
-Blinker5.asm                                                          Page: 22
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00122 1E01 	;
 00123 1E01 2704 		call	ReadEEData	;Get Data from EEPROM (0xFF) 
 00124 1E02 3AFF 		xorlw	0xFF
@@ -2201,6 +2344,9 @@ Blinker5.asm                                                          Page: 1
 00174 1E24 	;
 00175 1E24 3030 		movlw	0x30	;'0'
 00176 1E25 0278 		subwf	Param78,W
+Blinker5.asm                                                          Page: 24
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00177 1E26 		SKPNB		;Char>="0"?
 00177 1E26 1C03      M		BTFSS	STATUS,C		BTFSS	STATUS,C
 00178 1E27 33EB 		bra	BL_ParseNextLine	; No start over
@@ -2242,9 +2388,6 @@ Blinker5.asm                                                          Page: 1
 00211 1E44 3206 	                       bra                    BLP_IHS_Length         ;Waiting for length byte
 00212 1E45 3211 	                       bra                    BLP_IHS_AddrMSB        ;IHS_AddrMSB
 00213 1E46 3214 	                       bra                    BLP_IHS_AddrLSB        ;IHS_AddrLSB
-Blinker5.asm                                                          Page: 23
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00214 1E47 3217 	                       bra                    BLP_IHS_DataType       ;IHS_DataType
 00215 1E48 321D 	                       bra                    BLP_IHS_Data           ;IHS_Data
 00216 1E49 3225 	                       bra                    BLP_IHS_CSum           ;IHS_CSum
@@ -2303,6 +2446,9 @@ Blinker5.asm                                                          Page: 1
 00266 1E6F 01F8 		clrf	Param78
 00267 1E70 082D 		movf	ChkSum,W
 00268 1E71 0278 		subwf	Param78,W
+Blinker5.asm                                                          Page: 25
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00269 1E72 022B 		subwf	IH_TempVal,W
 00270 1E73 		SKPNZ		;Checksum matches?
 00270 1E73 1903      M		BTFSC	STATUS,Z		BTFSC	STATUS,Z
@@ -2344,9 +2490,6 @@ Blinker5.asm                                                          Page: 1
 00305 1E8B 3205 	                       bra                    BLPV_Exit_Ack
 00306 1E8C 	;
 00307 1E8C 	;---------------------
-Blinker5.asm                                                          Page: 24
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00308 1E8C 	; handle high address change
 00309 1E8C 26DE 	BLPV_HighAddr	call                   FSR0_SerialBuffer
 00310 1E8D 0012 		moviw	FSR0++
@@ -2405,6 +2548,9 @@ Blinker5.asm                                                          Page: 1
 00359 1EAE 	;
 00360 1EAE 26CD 	BIHD_FlushBuff	call	BLP_WriteBuffer
 00361 1EAF 	;
+Blinker5.asm                                                          Page: 26
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00362 1EAF 	; Entry: IH_Addr_Lo=Word Address
 00363 1EAF 	; 
 00364 1EAF 0823 	BIHD_PutInBuff	movf	IH_Addr_Lo,W           ;was converted to words
@@ -2446,9 +2592,6 @@ Blinker5.asm                                                          Page: 1
 00400 1EC9 		SKPNZ		;buffer full?
 00400 1EC9 1903      M		BTFSC	STATUS,Z		BTFSC	STATUS,Z
 00401 1ECA 3202 		bra	BLP_WriteBuffer	; Yes, ProgWordCount = 0x20
-Blinker5.asm                                                          Page: 25
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00402 1ECB 		SKPNB		;Overflow? This should not happen.
 00402 1ECB 1C03      M		BTFSS	STATUS,C		BTFSS	STATUS,C
 00403 1ECC 0008 		return		; No, ProgWordCount < 0x20
@@ -2507,6 +2650,9 @@ Blinker5.asm                                                          Page: 1
 00456 1EED 	;
 00457 1EED 	;==============================================
 00458 1EED 	; Get a byte from UART, waits forever
+Blinker5.asm                                                          Page: 27
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00459 1EED 	;
 00460 1EED 	; Entry: none
 00461 1EED 	; Exit: W=Char
@@ -2548,9 +2694,6 @@ Blinker5.asm                                                          Page: 1
 00496 1F04 	;	
 00497 1F04 	;==============================================
 00498 1F04 	; Read EEProm(255)
-Blinker5.asm                                                          Page: 26
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00499 1F04 	;
 00500 1F04 	ReadEEData:	
 00501 1F04 0023 		movlb	EEADRL
@@ -2609,6 +2752,9 @@ Blinker5.asm                                                          Page: 1
 00553 1F27 		SKPZ		;=0x3F?
 00553 1F27 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
 00554 1F28 3400 		retlw	0x00	; No
+Blinker5.asm                                                          Page: 28
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00555 1F29 	;
 00556 1F29 0BF9 		decfsz	Param79,F
 00557 1F2A 33F6 		bra	TestErased_L1
@@ -2650,9 +2796,6 @@ Blinker5.asm                                                          Page: 1
 00589 1F41 1D03      M		BTFSS	STATUS,Z		BTFSS	STATUS,Z
 00590 1F42 3400 		retlw	0x00	; No
 00591 1F43 	;
-Blinker5.asm                                                          Page: 27
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00592 1F43 0BF9 	CB_Next	decfsz	Param79,F
 00593 1F44 33E9 		bra	CompareBlock_L1
 00594 1F45 3401 		retlw	0x01	;It's a match!
@@ -2711,6 +2854,9 @@ Blinker5.asm                                                          Page: 1
 00647 1F63 	; Entry: PROG_ADDR_HI:PROG_ADDR_LO
 00648 1F63 	;
 00649 1F63 2772 	EraseProgBlock	call	LoadProgAddr
+Blinker5.asm                                                          Page: 29
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00650 1F64 1795 		BSF	EECON1,EEPGD	;Point to program memory
 00651 1F65 1315 		BCF	EECON1,CFGS	;Not configuration space
 00652 1F66 1615 		BSF	EECON1,FREE	;Specify an erase operation, automaticaly cleared
@@ -2752,9 +2898,6 @@ Blinker5.asm                                                          Page: 1
 00688 1F7A 2772 	WriteProgBlock	call	LoadProgAddr
 00689 1F7B 1795 		BSF	EECON1,EEPGD	;Point to program memory
 00690 1F7C 1315 		BCF	EECON1,CFGS	;Not configuration space
-Blinker5.asm                                                          Page: 28
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00691 1F7D 1515 		BSF	EECON1,WREN	;Enable writes
 00692 1F7E 1695 		BSF	EECON1,LWLO	;Only Load Write Latches
 00693 1F7F 3020 		movlw	BlockWords
@@ -2813,6 +2956,9 @@ Blinker5.asm                                                          Page: 1
 00746 1FA9 	;
 00747 1FA9 0024 		movlb	4	; bank 4
 00748 1FAA 168C 		bsf	WPUA,WPUA5	;Put a pull up on the MCLR unused pin.
+Blinker5.asm                                                          Page: 30
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 00749 1FAB 	;
 00750 1FAB 0023 		MOVLB	0x03	; bank 3
 00751 1FAC 3000 		movlw	ANSELA_Val
@@ -2854,9 +3000,6 @@ Blinker5.asm                                                          Page: 1
 00793 1FC6 	;
 00794 1FC6 	;	bsf	INTCON,PEIE	; enable periferal interupts
 00795 1FC6 138B 		bcf	INTCON,GIE	; disable interupts
-Blinker5.asm                                                          Page: 29
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 00796 1FC7 	;
 00797 1FC7 0008 		return
 00798 1FC8 	;
@@ -2888,9 +3031,9 @@ Blinker5.asm                                                          Page: 1
 00824 1FC8 	 
 00825 1FC8 	 
 00826 1FC8 	 
-00605 1FC8 	;
-00606 1FC8 	;
-00607 1FC8 		END
+00780 1FC8 	;
+00781 1FC8 	;
+00782 1FC8 		END
 
 X-Ref Table
 _Z	STATUS,Z	WriteProgBlock_L1
@@ -2915,6 +3058,9 @@ BlockWords	0020 	BIHD_PutInBuff_L1, TestErased, CompareBlock, EraseSourceBuffer,
 		WriteProgBlock
 BLP_IHS_AddrLSB ^	1E5B 	BLP_TestNum_2
 BLP_IHS_AddrMSB ^	1E57 	BLP_TestNum_2
+Blinker5.asm   X-Ref Table                                               Page: 31
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 BLP_IHS_CSum ^	1E6F 	BLP_TestNum_2
 BLP_IHS_Data ^	1E66 	BLP_TestNum_2
 BLP_IHS_DataType ^	1E5F 	BLP_TestNum_2
@@ -2956,9 +3102,6 @@ Cmd_SaveParams ^	089F 	Dispatcher_4
 Cmd_SendIDString ^	08B9 	Dispatcher_6
 Cmd_SendIDString_L1 ^	08BA 	Cmd_SendIDString_L1
 Cmd_SetMasterAddr ^	08AD 	Dispatcher_6
-Blinker5.asm   X-Ref Table                                               Page: 30
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 Cmd_SetMode ^	0895 	Dispatcher_1
 Cmd_SetSlaveAddr ^	08B3 	Dispatcher_6
 CompareBlock ^	1F2C 	BLP_WriteBuffer
@@ -3017,8 +3160,11 @@ F	0001 	ProgStartVector, ClearRam, ClearRam_L2, CopyToRam_L1, SaveParams_L1, Dec
 		BLP_NextState, BLP_IHS_AddrMSB, BLP_IHS_AddrLSB, BLP_IHS_DataType, BLP_IHS_Data
 		BufferIHData, BIHD_PutInBuff_E2, BIHD_PutInBuff_L1, TestErased_L1, CB_Next, EraseBlock_L1
 		ReadProgBlock_L1, ReadProgBlock_1, WriteProgBlock_L1
+Blinker5.asm   X-Ref Table                                               Page: 32
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 FERR	0002 	RX_TheByte_Err, GetChar_Err
-FinTime	0032 	SequenceData
+FinSeq	0000 	SequenceData
 FirstRAMParam	SysMode	CopyToRam, SaveParams
 FlushInBuff ^	00E3 	RS232_Parse_Error
 FREE	0004 	EraseProgBlock
@@ -3058,9 +3204,6 @@ IH_Flags	002C 	BootLoaderStart, BL_Parse, BLP_L1, BLP_TestNum_1, BLPV_EndCmd, Bu
 		BIHD_PutInBuff_L1, EraseSourceBuffer
 IH_State	002A 	BootLoaderStart, BL_ParseNextLine, BLP_L2, BLP_TestNum, BLP_TestNum_2
 		BLP_NextState, BLP_IHS_DataType
-Blinker5.asm   X-Ref Table                                               Page: 31
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 IH_TempVal	002B 	BootLoaderStart, BLP_TestNum_1, BLP_TestNum_2, BLP_IHS_Length, BLP_SaveIH_Length
 		BLP_IHS_AddrMSB, BLP_IHS_AddrLSB, BLP_IHS_DataType, BLP_IHS_Data, BLP_IHS_CSum
 IH_Type	0029 	BootLoaderStart, BLP_IHS_DataType, BLP_Validate
@@ -3086,6 +3229,7 @@ LWLO	0005 	WriteProgBlock, WriteProgBlock_Wr
 MainLoop ^	01AF 	ModeReturn
 ModeReturn ^	01B5 	DoModeZero
 MSN_Done	IH_Flags,0	BootLoaderStart, BLP_L1, BLP_TestNum_1
+NC_Blinker	0001 	SequenceData
 NOT_WPUEN	0007 	InitializeIO, InitializeBLIO
 nvFirstParamByte	nvSysMode	InitializeBLIO, CopyToRam, SaveParams
 nvLastParamByte	nvSysFlags	InitializeBLIO
@@ -3100,10 +3244,7 @@ OSCCON	0099 	InitializeIO, InitializeBLIO
 OSCCON_Value	00F0 	InitializeIO, InitializeBLIO
 OutJ2	0002 	SequenceData
 OutJ3	0001 	SequenceData
-OutJ4	0040 	SequenceData
-OutJ5	0004 	SequenceData
-OutJ6	0008 	SequenceData
-OutMask	0048 	DoModeZero
+OutMask	00A0 	DoModeZero
 Param77	0077 	DelayWuS, DelayWuS_Loop, CompareBlock_L1, CB_NotBlank
 Param78	0078 	RX_TheByte_Err, GetSerIn, StoreSerOut, POP_SerOut_End, RS232_Parse_Byte
 		RS232_Parse_Sync2, RS232_Parse_SALo, RS232_Parse_SALo_end, RS232_Parse_DALo_End
@@ -3121,6 +3262,9 @@ PCLATH	000A 	ProgStartVector
 PEIE	0006 	InitializeIO
 PIE1	0091 	InitializeIO
 PIR1	0011 	ProgStartVector, SystemBlink_end, GetChar, SendChar
+Blinker5.asm   X-Ref Table                                               Page: 33
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 POP_SerOut_End ^	0105 	StoreSerOut
 PORTA	000C 	InitializeIO, InitializeBLIO
 PortADDRBits	00A0 	InitializeIO, InitializeBLIO
@@ -3160,9 +3304,6 @@ RS232_Parse_Error ^	0186 	RS232_Parse_Sync2, RS232_Parse_Data_end
 RS232_Parse_L1 ^	0179 	RS232_Parse_L1
 RS232_Parse_Rtn ^	014A 	RS232_Parse_Byte, RS232_Parse_Sync2, RS232_Parse_SALo_end
 		RS232_Parse_DALo_End
-Blinker5.asm   X-Ref Table                                               Page: 32
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 RS232_Parse_SALo ^	013A 	RS232_Parse_Sync2
 RS232_Parse_SALo_end ^	014C 	RS232_Parse_SALo
 RS232_Parse_Sync2 ^	0132 	RS232_Parse_Byte
@@ -3223,6 +3364,9 @@ STATUS	0003 	ProgStartVector, CopyToRam_L1, SaveParams_L1, DecTimer, RX_TheByte,
 StoreSerOut ^	00F1 	RS232_Send, RS232_Send_L1, StoreSerOut_S0
 StoreSerOut_S0 ^	08D5 	Cmd_SendIDString_L1
 SyncByte1RXd	RX_ParseFlags,0	GetSerOut_End, RS232_Parse_Byte
+Blinker5.asm   X-Ref Table                                               Page: 34
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
 SyncByte2RXd	RX_ParseFlags,1	GetSerOut_End, RS232_Parse_Sync2
 SysFlags	0035 	CopyToRam_L1, SaveParams_L1
 SysLED_Bit	0007 	ProgStartVector, SystemBlink_Std
@@ -3240,7 +3384,7 @@ T2CON_Value	004F 	InitializeIO
 TestErased ^	1F1F 	BLP_WriteBuffer
 TestErased_L1 ^	1F21 	TestErased_L1
 Timer1Hi	0028 	DecTimer1, DecTimer
-Timer1Lo	0027 	DecTimer, GetSerOut_End, RS232_Parse_Byte, DoModeZero
+Timer1Lo	0027 	DecTimer, GetSerOut_End, RS232_Parse_Byte
 Timer2Hi	002A 	DecTimer2, DecTimer
 Timer2Lo	0029 	DecTimer, DoModeZero
 Timer3Hi	002C 	DecTimer3, DecTimer
@@ -3262,9 +3406,6 @@ TXSTA_Value	0024 	InitializeBLIO
 UseAltSerialPort	0000 	InitializeBLIO
 UseEEParams	0001 	ClearRam, CopyToRam
 useRS232	0000 	MainLoop, InitializeIO
-Blinker5.asm   X-Ref Table                                               Page: 33
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 UseRS232Chksum	0001 	GetSerOut_End, RS232_Parse_DALo_End, RS232_Parse_Data_end, RS232_Send_L1
 UseRS232SendSyncBytes	0000 	GetSerOut_End, RS232_Send
 UseRS232SyncBytes	0001 	GetSerOut_End, RS232_Parse_Byte
@@ -3325,6 +3466,9 @@ TestT3_Zero !	0070
 TestT4_Zero !	006C 	
 TX_TheByte !	00AA 	
 WriteProgBlock_end !	1F9C 	
+Blinker5.asm   X-Ref Table                                               Page: 35
+/Users/davidflynn/Projects/Blinker5/Firmware/
+
  
 
 Memory Usage Map ('X' = Used, '-' = Unused)
@@ -3336,7 +3480,8 @@ Memory Usage Map ('X' = Used, '-' = Unused)
 0100  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0140  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0180  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
-01C0  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXX-- ---------------- ----------------
+01C0  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0200  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XX--------------
 0800  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0840  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 0880  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
@@ -3351,8 +3496,8 @@ Memory Usage Map ('X' = Used, '-' = Unused)
 1F80  : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
 1FC0  : XXXXXXXX-------- ---------------- ---------------- ----------------
  
-Program Memory Words Used:1206
-Program Memory Words Free:6986
+Program Memory Words Used:1290
+Program Memory Words Free:6902
  
 UserID
 8000  :XXXX
@@ -3364,8 +3509,5 @@ EEPROM
 F000  : XXXX------------ ---------------- ---------------- ----------------
 F0C0  : ---------------- ---------------- ---------------- ---------------X
  
-Blinker5.asm   Memory Usage Map                                          Page: 34
-/Users/davidflynn/Projects/Blinker5/Firmware/
-
 Data EEPROM Bytes Used:5
 Data EEPROM Bytes Free:251
